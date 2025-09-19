@@ -1,0 +1,436 @@
+﻿@model List<string>
+@{
+    ViewData["Title"] = "Job Applications - CVs";
+}
+
+<style>
+    /* Custom styles for the enhanced design */
+    body {
+        background-color: #f0f2f5; /* Light gray background */
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .card {
+        border-radius: 12px;
+        border: none;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+        }
+
+    .card-body {
+        padding: 1.5rem;
+    }
+
+    .stats-card .card-body {
+        padding: 1rem 1.5rem;
+    }
+
+    /* Custom colors for a unified theme */
+    .text-cadetblue {
+        color: cadetblue !important;
+    }
+
+    .bg-cadetblue {
+        background-color: cadetblue !important;
+    }
+
+    .btn-cadetblue {
+        background-color: cadetblue;
+        border-color: cadetblue;
+        color: #fff;
+        transition: all 0.3s ease;
+    }
+
+        .btn-cadetblue:hover {
+            background-color: darkcyan;
+            border-color: darkcyan;
+        }
+
+    .btn-outline-cadetblue {
+        color: cadetblue;
+        border-color: cadetblue;
+        transition: all 0.3s ease;
+    }
+
+        .btn-outline-cadetblue:hover {
+            background-color: cadetblue;
+            color: #fff;
+        }
+
+    .btn-outline-secondary {
+        color: #6c757d;
+        border-color: #6c757d;
+        transition: all 0.3s ease;
+    }
+
+        .btn-outline-secondary:hover {
+            background-color: #6c757d;
+            color: #fff;
+        }
+
+    .btn-action-group .btn {
+        border-radius: 50px; /* Fully rounded buttons */
+        margin: 0 5px;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: rgba(95, 158, 160, 0.1); /* Lighter shade of cadetblue on hover */
+    }
+
+    .table th, .table td {
+        vertical-align: middle;
+    }
+
+    .status-badge {
+        font-size: 0.8rem;
+        padding: 0.5em 0.8em;
+        border-radius: 50px;
+    }
+
+    /* Modal styles for a cleaner look */
+    #cvPreviewModal .modal-content {
+        border-radius: 12px;
+    }
+
+    #cvPreviewFrame {
+        height: 70vh; /* Make the iframe fill the modal better */
+        border-radius: 0 0 12px 12px;
+    }
+</style>
+
+<div class="container py-5">
+    <!-- Header Section -->
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <div>
+            <h1 class="display-6 fw-bold text-cadetblue mb-1">
+                <i class="fas fa-file-alt me-2"></i>
+                Job Applications
+            </h1>
+            <p class="text-muted fs-6 mb-0">Review and manage submitted resumes efficiently.</p>
+        </div>
+        <div>
+            <a asp-action="MyPostedJobs" class="btn btn-outline-secondary btn-lg rounded-pill">
+                <i class="fas fa-arrow-left me-2"></i>
+                Back to My Jobs
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row g-4 mb-5">
+        <div class="col-12">
+            <div class="card stats-card bg-cadetblue text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title text-uppercase opacity-75 mb-1">Total Applications</h6>
+                            <h2 class="mb-0 fw-bold">@Model.Count()</h2>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-users fa-3x opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CVs Section -->
+    <div class="card shadow-lg">
+        <div class="card-header bg-white py-4 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-semibold">
+                <i class="fas fa-list me-2 text-cadetblue"></i>
+                Submitted Resumes
+            </h5>
+            <div class="btn-group btn-group-sm btn-action-group" role="group">
+                <button class="btn btn-outline-cadetblue" onclick="downloadAllCVs()">
+                    <i class="fas fa-download me-1"></i> Download All
+                </button>
+                <button class="btn btn-outline-secondary" onclick="toggleView()">
+                    <i class="fas fa-th-large me-1"></i> Toggle View
+                </button>
+            </div>
+        </div>
+
+        <div class="card-body p-0">
+            @if (!Model.Any())
+            {
+                <div class="text-center py-5">
+                    <div class="mb-4">
+                        <i class="fas fa-inbox fa-5x text-muted"></i>
+                    </div>
+                    <h4 class="text-muted fw-bold">No Applications Yet</h4>
+                    <p class="text-muted">No one has applied for this job position yet. Create a new job to start receiving applications.</p>
+
+                </div>
+            }
+            else
+            {
+                <!-- Table View -->
+                <div id="tableView">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="ps-4">#</th>
+                                    <th>Resume File</th>
+                                    <th>Status</th>
+                                    <th class="text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    int counter = 1;
+                                }
+                                @foreach (var resumePath in Model)
+                                {
+                                    <tr class="@(string.IsNullOrEmpty(resumePath) ? "table-warning" : "")">
+                                        <td class="ps-4 fw-semibold">@counter</td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(resumePath))
+                                            {
+                                                <div class="d-flex align-items-center">
+                                                    <i class="fas fa-file-pdf text-danger me-2"></i>
+                                                    <div>
+                                                        <div class="fw-medium">Resume #@counter</div>
+                                                        <small class="text-muted">PDF Document</small>
+                                                    </div>
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <div class="d-flex align-items-center">
+                                                    <i class="fas fa-times-circle text-warning me-2"></i>
+                                                    <span class="text-muted">No CV uploaded</span>
+                                                </div>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(resumePath))
+                                            {
+                                                <span class="badge bg-success status-badge">Available</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-warning text-dark status-badge">Missing</span>
+                                            }
+                                        </td>
+                                        <td class="text-center">
+                                            @if (!string.IsNullOrEmpty(resumePath))
+                                            {
+                                                <div class="d-flex justify-content-center">
+                                                    <button class="btn btn-sm btn-outline-cadetblue me-2 rounded-pill"
+                                                            onclick="previewCV('@resumePath', @counter)"
+                                                            title="Quick Preview">
+                                                        <i class="fas fa-eye"></i>
+                                                    </button>
+                                                    <a href="@Url.Content(resumePath)"
+                                                       download="Resume_@(counter).pdf"
+                                                       class="btn btn-sm btn-outline-cadetblue rounded-pill"
+                                                       title="Download">
+                                                        <i class="fas fa-download"></i>
+                                                    </a>
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted fst-italic">No actions available</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                    counter++;
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Grid View -->
+                <div id="gridView" class="d-none">
+                    <div class="row g-4 p-4">
+                        @{
+                            counter = 1;
+                        }
+                        @foreach (var resumePath in Model.Where(r => !string.IsNullOrEmpty(r)))
+                        {
+                            <div class="col-lg-3 col-md-4 col-sm-6">
+                                <div class="card h-100 shadow-sm cv-card">
+                                    <div class="card-body text-center d-flex flex-column justify-content-center">
+                                        <div class="mb-3">
+                                            <i class="fas fa-file-pdf fa-4x text-danger"></i>
+                                        </div>
+                                        <h6 class="card-title fw-bold">Resume #@counter</h6>
+                                        <p class="card-text text-muted small mb-3">
+                                            PDF Document
+                                        </p>
+                                        <div class="d-flex justify-content-center">
+                                            <button class="btn btn-sm btn-cadetblue rounded-pill me-2" onclick="previewCV('@resumePath', @counter)">
+                                                <i class="fas fa-eye me-1"></i> Preview
+                                            </button>
+                                            <a href="@Url.Content(resumePath)" download="Resume_@(counter).pdf" class="btn btn-sm btn-cadetblue rounded-pill">
+                                                <i class="fas fa-download me-1"></i> Download
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            counter++;
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- CV Preview Modal -->
+<div class="modal fade" id="cvPreviewModal" tabindex="-1" aria-labelledby="cvPreviewTitle" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cvPreviewTitle">Resume Preview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div id="loadingSpinner" class="text-center py-5">
+                    <div class="spinner-border text-cadetblue" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2 text-muted">Loading resume...</p>
+                </div>
+                <iframe id="cvPreviewFrame" src="" width="100%" frameborder="0" class="d-none"></iframe>
+                <div id="previewError" class="alert alert-warning m-4 d-none">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Unable to preview this file. Please download it to view.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Close</button>
+                <a id="downloadFromModal" href="" download class="btn btn-cadetblue rounded-pill">
+                    <i class="fas fa-download me-2"></i>Download
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Functions for toggling view, previewing CV, and downloading all CVs
+    const previewCV = (resumePath, number) => {
+        const modalElement = document.getElementById('cvPreviewModal');
+        const modal = new bootstrap.Modal(modalElement);
+        const frame = document.getElementById('cvPreviewFrame');
+        const spinner = document.getElementById('loadingSpinner');
+        const error = document.getElementById('previewError');
+        const title = document.getElementById('cvPreviewTitle');
+        const downloadBtn = document.getElementById('downloadFromModal');
+
+        // Set modal title and download link
+        title.textContent = `Resume #${number} Preview`;
+        downloadBtn.href = resumePath;
+        downloadBtn.download = `Resume_${number}.pdf`;
+
+        // Reset state before showing
+        spinner.classList.remove('d-none');
+        frame.classList.add('d-none');
+        error.classList.add('d-none');
+        frame.src = ''; // Clear previous content
+
+        modal.show();
+
+        // Load the PDF into the iframe
+        frame.src = resumePath;
+        frame.onload = () => {
+            spinner.classList.add('d-none');
+            frame.classList.remove('d-none');
+        };
+        frame.onerror = () => {
+            spinner.classList.add('d-none');
+            error.classList.remove('d-none');
+        };
+    };
+
+    const downloadAllCVs = () => {
+        const downloadLinks = document.querySelectorAll('#tableView a[download], #gridView a[download]');
+        if (downloadLinks.length === 0) {
+            // Using a custom modal instead of alert
+            showCustomModal("Download Resumes", "No resumes available for download.");
+            return;
+        }
+
+        // Custom confirmation modal
+        showCustomModal("Confirm Download", `Are you sure you want to download all ${downloadLinks.length} resumes?`, () => {
+            downloadLinks.forEach((link, index) => {
+                setTimeout(() => {
+                    link.click();
+                }, index * 500); // 500ms delay to prevent browser block
+            });
+        });
+    };
+
+    const toggleView = () => {
+        const tableView = document.getElementById('tableView');
+        const gridView = document.getElementById('gridView');
+        const toggleButton = document.querySelector('.btn-action-group button:last-child i');
+
+        if (tableView.classList.contains('d-none')) {
+            tableView.classList.remove('d-none');
+            gridView.classList.add('d-none');
+            toggleButton.classList.remove('fa-th-list');
+            toggleButton.classList.add('fa-th-large');
+        } else {
+            tableView.classList.add('d-none');
+            gridView.classList.remove('d-none');
+            toggleButton.classList.remove('fa-th-large');
+            toggleButton.classList.add('fa-th-list');
+        }
+    };
+
+    // Custom modal for alerts and confirmations (replaces alert and confirm)
+    function showCustomModal(title, message, onConfirm = null) {
+        let modalHtml = `
+            <div class="modal fade" id="customAlertModal" tabindex="-1" aria-labelledby="customAlertTitle" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="customAlertTitle">${title}</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>${message}</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Close</button>
+                            ${onConfirm ? `<button type="button" class="btn btn-cadetblue rounded-pill" id="confirmBtn">Confirm</button>` : ''}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        const modalElement = document.getElementById('customAlertModal');
+        const modal = new bootstrap.Modal(modalElement);
+        modal.show();
+
+        if (onConfirm) {
+            document.getElementById('confirmBtn').addEventListener('click', () => {
+                onConfirm();
+                modal.hide();
+            });
+        }
+
+        modalElement.addEventListener('hidden.bs.modal', function () {
+            modalElement.remove();
+        });
+    }
+
+    // Clean up modal on close
+    document.getElementById('cvPreviewModal').addEventListener('hidden.bs.modal', () => {
+        document.getElementById('cvPreviewFrame').src = '';
+    });
+</script>

@@ -1,0 +1,107 @@
+﻿@model JobHunter.Models.Job
+
+@{
+    ViewData["Title"] = "Delete Job";
+}
+
+<style>
+    .delete-container {
+        max-width: 700px;
+        margin: 30px auto;
+        background-color: #f8f9fa;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .delete-header {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .job-image-preview {
+        width: 100%;
+        max-height: 300px;
+        object-fit: cover;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+
+    .btn-group {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-top: 20px;
+    }
+
+    .btn-danger {
+        background-color: #dc3545;
+        border: none;
+        padding: 10px 20px;
+        color: white;
+        border-radius: 5px;
+        transition: background-color 0.3s ease;
+    }
+
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+
+    .btn-secondary {
+        background-color: #6c757d;
+        border: none;
+        padding: 10px 20px;
+        color: white;
+        border-radius: 5px;
+        text-decoration: none;
+        transition: background-color 0.3s ease;
+    }
+
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+</style>
+
+<div class="delete-container">
+    <div class="delete-header">
+        <h1>Delete Job</h1>
+        <h4>Are you sure you want to delete this job?</h4>
+    </div>
+
+    @if (!string.IsNullOrEmpty(Model.ImagePath))
+    {
+        <img src="@Model.ImagePath" alt="Job Image" class="job-image-preview" />
+    }
+
+    <dl class="row">
+        <dt class="col-sm-4">Job Title</dt>
+        <dd class="col-sm-8">@Model.JobTitle</dd>
+
+        <dt class="col-sm-4">Years of Experience</dt>
+        <dd class="col-sm-8">@Model.years_of_experience</dd>
+
+        <dt class="col-sm-4">Requirements</dt>
+        <dd class="col-sm-8">@Model.Requirements</dd>
+
+    
+    </dl>
+
+    <form asp-action="Delete">
+        <input type="hidden" asp-for="Id" />
+        <div class="btn-group">
+            <input type="submit" value="Delete" class="btn-danger" />
+            <a asp-action="MyPostedJobs" class="btn-secondary">Back </a>
+        </div>
+    </form>
+</div>
+
+
+
+
+
+
+
+
+
+
+

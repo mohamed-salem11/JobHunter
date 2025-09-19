@@ -1,0 +1,109 @@
+﻿@model JobHunter.Models.Job
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<style>
+    .form-control:focus {
+        border-color: cadetblue !important;
+        box-shadow: 0 0 0 0.25rem rgba(95, 158, 160, 0.5);
+    }
+
+    .form-check-input {
+        accent-color: cadetblue !important;
+    }
+
+        .form-check-input:checked {
+            background-color: cadetblue;
+            border: 2px solid cadetblue;
+        }
+
+    .btn-custom {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 5px;
+        color: white;
+        transition: background-color 0.3s ease;
+    }
+
+    .btn-save {
+        background-color: cadetblue;
+    }
+
+        .btn-save:hover {
+            background-color: #5f9ea0;
+        }
+
+    .btn-back {
+        background-color: #6c757d;
+        margin-left: 8px; 
+    }
+
+        .btn-back:hover {
+            background-color: #5a6268;
+        }
+</style>
+
+<h1>Edit Job</h1>
+
+<hr />
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Edit" enctype="multipart/form-data">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Id" />
+
+            <div class="form-group">
+                <label asp-for="JobTitle" class="control-label"></label>
+                <input asp-for="JobTitle" class="form-control" />
+                <span asp-validation-for="JobTitle" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="years_of_experience" class="control-label"></label>
+                <input asp-for="years_of_experience" class="form-control" />
+                <span asp-validation-for="years_of_experience" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Requirements" class="control-label"></label>
+                <input asp-for="Requirements" class="form-control" />
+                <span asp-validation-for="Requirements" class="text-danger"></span>
+            </div>
+
+            @if (!string.IsNullOrEmpty(Model.ImagePath))
+            {
+                <div class="form-group">
+                    <label class="control-label">Current Image</label>
+                    <div>
+                        <img src="@Model.ImagePath" alt="Current Job Image" style="max-width: 200px; max-height: 200px;" />
+                    </div>
+                </div>
+            }
+
+            <div class="form-group">
+                <label for="imageFile" class="control-label">Update Image</label>
+                <input name="imageFile" type="file" class="form-control" id="imageFile" />
+                @if (ViewData.ModelState["imageFile"]?.Errors.Count > 0)
+                {
+                    <span class="text-danger">@ViewData.ModelState["imageFile"].Errors[0].ErrorMessage</span>
+                }
+                <small class="form-text text-muted">Only JPG, JPEG, PNG files are allowed (optional - leave empty to keep current image)</small>
+            </div>
+
+            <input type="hidden" asp-for="ImagePath" />
+
+            <div class="form-group mt-3 d-flex">
+                <input type="submit" value="Save" class="btn btn-custom btn-save" />
+                <a asp-controller="Jobs" asp-action="MyPostedJobs" class="btn btn-custom btn-back">Back</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

@@ -1,0 +1,749 @@
+﻿@{
+    Layout = "_Layout";
+}
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive CV Builder</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+
+        /* Custom styles for the CV builder and preview */
+                body {
+                        font-family: 'Inter', sans-serif;
+                        background-color: #f3f4f6;
+
+        }
+
+                .container {
+                        max-width: 1400px;
+
+        }
+
+                .cv-form {
+                        background-color: #ffffff;
+
+        }
+
+                .cv-preview {
+                        background-color: #ffffff;
+                        font-size: 12px;
+                        line-height: 1.2;
+
+        }
+
+                .cv-header {
+                        text-align: center;
+                        padding-bottom: 2px;
+                        margin-bottom: 2px;
+
+        }
+
+                .cv-name {
+                        font-size: 18px;
+                        font-weight: bold;
+                        color: #2c3e50;
+                        margin: 0;
+
+        }
+
+                .cv-job-title {
+                        color: #3498db;
+                        font-size: 14px;
+                        margin: 0;
+
+        }
+
+                .cv-contact {
+                        margin: 2px 0;
+                        font-size: 10px;
+                        color: #666;
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        gap: 1px;
+
+        }
+
+                .cv-section {
+                        margin-top: 2px;
+
+        }
+
+                .cv-section-title {
+                        font-size: 12px;
+                        font-weight: bold;
+                        color: #2c3e50;
+                        padding-bottom: 1px;
+                        text-transform: uppercase;
+                        margin: 0;
+                        position: relative;
+
+        }
+
+                .cv-item {
+                        margin-bottom: 2px;
+
+        }
+
+                .cv-item-title {
+                        font-weight: bold;
+                        color: #2c3e50;
+                        font-size: 11px;
+                        margin: 0;
+
+        }
+
+                .cv-item-subtitle {
+                        color: #3498db;
+                        font-style: italic;
+                        font-size: 10px;
+                        margin: 0;
+
+        }
+
+                .cv-item-date {
+                        color: #666;
+                        font-size: 9px;
+                        margin: 0;
+
+        }
+
+                .skills-grid {
+                        display: flex;
+                        flex-wrap: wrap;
+                        gap: 3px;
+
+        }
+
+                .skill-item {
+                        background: #3498db;
+                        color: white;
+                        padding: 2px 5px;
+                        border-radius: 8px;
+                        font-size: 9px;
+                        display: inline-block;
+
+        }
+
+                .dynamic-item {
+                        border: 1px solid #e5e7eb;
+                        padding: 6px;
+                        border-radius: 3px;
+                        margin-bottom: 6px;
+                        position: relative;
+
+        }
+
+                .remove-btn-container {
+                        position: absolute;
+                        top: 2px;
+                        right: 2px;
+
+        }
+
+                .btn-remove-item {
+                        color: #ef4444;
+                        font-size: 12px;
+
+        }
+
+                .divider {
+                        border-top: 1px solid #000;
+                        margin: 2px 0 1px 0;
+                        height: 0;
+
+        }
+
+                .list-disc {
+                        list-style-type: disc;
+                        padding-left: 12px;
+                        margin: 1px 0;
+
+        }
+
+                    .list-disc li {
+                            margin: 1px 0;
+                            font-size: 10px;
+
+        }
+
+                @@media print {
+                        body
+
+        {
+                            font-size: 10px;
+                            line-height: 1.1;
+
+        }
+
+                    .cv-name {
+                            font-size: 16px;
+
+        }
+
+                    .cv-job-title {
+                            font-size: 12px;
+
+        }
+
+                    .cv-contact {
+                            font-size: 8px;
+
+        }
+
+                    .divider {
+                            margin: 1px 0;
+
+        }
+
+
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container mx-auto p-4 md:p-8">
+        <h1 class="text-3xl md:text-4xl font-bold text-center text-gray-800 mb-6">Interactive CV Builder</h1>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div id="cv-form" class="cv-form p-6 md:p-8 rounded-xl shadow-xl">
+                <form id="builder-form">
+                    <div class="mb-6">
+                        <h2 class="text-xl font-bold text-gray-800 mb-3">Personal Information</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div>
+                                <label for="fullName" class="block text-sm font-medium text-gray-700">Full Name</label>
+                                <input type="text" id="fullName" placeholder="John Doe" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label for="jobTitle" class="block text-sm font-medium text-gray-700">Job Title</label>
+                                <input type="text" id="jobTitle" placeholder="Software Engineer" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+                                <input type="email" id="email" placeholder="john.doe@example.com" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label for="phone" class="block text-sm font-medium text-gray-700">Phone</label>
+                                <input type="tel" id="phone" placeholder="+1 (123) 456-7890" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label for="location" class="block text-sm font-medium text-gray-700">Location</label>
+                                <input type="text" id="location" placeholder="New York, NY" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label for="linkedin" class="block text-sm font-medium text-gray-700">LinkedIn Profile</label>
+                                <input type="text" id="linkedin" placeholder="linkedin.com/in/johndoe" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-6">
+                        <h2 class="text-xl font-bold text-gray-800 mb-3"> Summary</h2>
+                        <textarea id="summary" rows="3" placeholder="A brief summary of your professional experience..." class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
+                    </div>
+
+                    <div class="mb-6">
+                        <h2 class="text-xl font-bold text-gray-800 mb-3">Work Experience</h2>
+                        <div id="experience-container">
+                        </div>
+                        <button type="button" id="add-experience" class="mt-3 w-full bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-600 transition-colors text-sm">Add Experience</button>
+                    </div>
+
+                    <div class="mb-6">
+                        <h2 class="text-xl font-bold text-gray-800 mb-3">Education</h2>
+                        <div id="education-container">
+                        </div>
+                        <button type="button" id="add-education" class="mt-3 w-full bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-600 transition-colors text-sm">Add Education</button>
+                    </div>
+
+                    <div class="mb-6">
+                        <h2 class="text-xl font-bold text-gray-800 mb-3">Skills</h2>
+                        <div id="skills-container" class="flex flex-wrap gap-2">
+                        </div>
+                        <button type="button" id="add-skill" class="mt-3 w-full bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-600 transition-colors text-sm">Add Skill</button>
+                    </div>
+
+                    <div class="mb-6">
+                        <h2 class="text-xl font-bold text-gray-800 mb-3">Projects</h2>
+                        <div id="projects-container">
+                        </div>
+                        <button type="button" id="add-project" class="mt-3 w-full bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-600 transition-colors text-sm">Add Project</button>
+                    </div>
+                </form>
+                <div class="mt-6 flex justify-center space-x-4">
+                    <button id="back-button" class="bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-md hover:bg-gray-400 transition-colors shadow-md text-sm">Back</button>
+                    <button id="download-cv" class="bg-green-500 text-white font-bold py-2 px-6 rounded-md hover:bg-green-600 transition-colors shadow-md text-sm">Download CV</button>
+                </div>
+            </div>
+
+            <div id="cv-preview" class="cv-preview p-5 md:p-6 rounded-xl shadow-xl">
+                <div class="cv-header">
+                    <h1 id="preview-name" class="cv-name"></h1>
+                    <h2 id="preview-job-title" class="cv-job-title"></h2>
+                    <div id="preview-contact" class="cv-contact">
+                        <div id="preview-email"></div>
+                        <div id="preview-phone"></div>
+                        <div id="preview-location"></div>
+                        <a id="preview-linkedin" href="#" target="_blank" class="hover:underline text-blue-500" style="display:none;"></a>
+                    </div>
+                </div>
+
+                <div class="cv-section" id="preview-summary-section" style="display:none;">
+                    <div class="divider"></div>
+                    <h3 class="cv-section-title"> SUMMARY</h3>
+                    <p id="preview-summary" class="text-gray-700"></p>
+                </div>
+
+                <div class="cv-section" id="preview-experience-section" style="display:none;">
+                    <div class="divider"></div>
+                    <h3 class="cv-section-title">WORK EXPERIENCE</h3>
+                    <div id="preview-experience">
+                    </div>
+                </div>
+
+                <div class="cv-section" id="preview-education-section" style="display:none;">
+                    <div class="divider"></div>
+                    <h3 class="cv-section-title">EDUCATION</h3>
+                    <div id="preview-education">
+                    </div>
+                </div>
+
+                <div class="cv-section" id="preview-skills-section" style="display:none;">
+                    <div class="divider"></div>
+                    <h3 class="cv-section-title">SKILLS</h3>
+                    <div id="preview-skills" class="skills-grid">
+                    </div>
+                </div>
+
+                <div class="cv-section" id="preview-projects-section" style="display:none;">
+                    <div class="divider"></div>
+                    <h3 class="cv-section-title">PROJECTS</h3>
+                    <div id="preview-projects">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { jsPDF } = window.jspdf;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('builder-form');
+
+            updatePreview();
+
+            form.addEventListener('input', updatePreview);
+
+            function createDynamicItem(type) {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'dynamic-item';
+                itemDiv.innerHTML = `
+                    <div class="remove-btn-container">
+                        <button type="button" class="btn-remove-item text-red-500 hover:text-red-700">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </button>
+                    </div>
+                    ${getDynamicItemHtml(type)}
+                `;
+                itemDiv.querySelector('.btn-remove-item').addEventListener('click', () => {
+                    itemDiv.remove();
+                    updatePreview();
+                });
+                return itemDiv;
+            }
+
+            function getDynamicItemHtml(type) {
+                switch(type) {
+                    case 'experience':
+                        return `
+                            <label class="block text-sm font-medium text-gray-700">Job Title</label>
+                            <input type="text" class="experience-title mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="e.g. Software Engineer">
+                            <label class="block text-sm font-medium text-gray-700 mt-1">Company</label>
+                            <input type="text" class="experience-company mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="e.g. Google">
+                            <div class="grid grid-cols-2 gap-2 mt-1">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Start Date</label>
+                                    <input type="month" class="experience-start mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">End Date</label>
+                                    <input type="month" class="experience-end mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                </div>
+                            </div>
+                            <label class="block text-sm font-medium text-gray-700 mt-1">Description</label>
+                            <textarea class="experience-description mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" rows="2" placeholder="Describe your responsibilities and achievements"></textarea>
+                        `;
+                    case 'education':
+                        return `
+                            <label class="block text-sm font-medium text-gray-700">Degree</label>
+                            <input type="text" class="education-degree mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="e.g. Bachelor of Science">
+                            <label class="block text-sm font-medium text-gray-700 mt-1">Institution</label>
+                            <input type="text" class="education-institution mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="e.g. University of Example">
+                            <div class="grid grid-cols-2 gap-2 mt-1">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Start Year</label>
+                                    <input type="month" class="education-start mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">End Year</label>
+                                    <input type="month" class="education-end mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                </div>
+                            </div>
+                            <label class="block text-sm font-medium text-gray-700 mt-1">Details (optional)</label>
+                            <textarea class="education-details mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" rows="1" placeholder="e.g. GPA, relevant coursework"></textarea>
+                        `;
+                    case 'skill':
+                        return `
+                            <label class="block text-sm font-medium text-gray-700">Skill</label>
+                            <input type="text" class="skill-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="e.g. JavaScript, Python, CSS">
+                        `;
+                    case 'project':
+                        return `
+                            <label class="block text-sm font-medium text-gray-700">Project Name</label>
+                            <input type="text" class="project-name mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="e.g. Interactive CV Builder">
+                            <label class="block text-sm font-medium text-gray-700 mt-1">Year</label>
+                            <input type="number" class="project-year mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="e.g. 2023">
+                            <label class="block text-sm font-medium text-gray-700 mt-1">Description</label>
+                            <textarea class="project-description mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" rows="2" placeholder="Describe the project and your role"></textarea>
+                        `;
+                }
+            }
+
+            document.getElementById('add-experience').addEventListener('click', () => {
+                document.getElementById('experience-container').appendChild(createDynamicItem('experience'));
+                updatePreview();
+            });
+            document.getElementById('add-education').addEventListener('click', () => {
+                document.getElementById('education-container').appendChild(createDynamicItem('education'));
+                updatePreview();
+            });
+            document.getElementById('add-skill').addEventListener('click', () => {
+                document.getElementById('skills-container').appendChild(createDynamicItem('skill'));
+                updatePreview();
+            });
+            document.getElementById('add-project').addEventListener('click', () => {
+                document.getElementById('projects-container').appendChild(createDynamicItem('project'));
+                updatePreview();
+            });
+
+            function updatePreview() {
+                // Personal Information
+                document.getElementById('preview-name').textContent = document.getElementById('fullName').value;
+                document.getElementById('preview-job-title').textContent = document.getElementById('jobTitle').value;
+
+                // Contact information
+                const email = document.getElementById('email').value;
+                const phone = document.getElementById('phone').value;
+                const location = document.getElementById('location').value;
+                const linkedin = document.getElementById('linkedin').value;
+
+                document.getElementById('preview-email').textContent = email;
+                document.getElementById('preview-phone').textContent = phone;
+                document.getElementById('preview-location').textContent = location;
+
+                const linkedinElement = document.getElementById('preview-linkedin');
+                linkedinElement.textContent = linkedin;
+                if (linkedin) {
+                    linkedinElement.href = `https://${linkedin}`;
+                    linkedinElement.style.display = 'block';
+                } else {
+                    linkedinElement.style.display = 'none';
+                }
+
+                // Summary
+                const summaryText = document.getElementById('summary').value;
+                document.getElementById('preview-summary-section').style.display = summaryText ? 'block' : 'none';
+                document.getElementById('preview-summary').textContent = summaryText;
+
+                // Work Experience
+                const experienceItems = document.querySelectorAll('#experience-container .dynamic-item');
+                const previewExperience = document.getElementById('preview-experience');
+                previewExperience.innerHTML = '';
+                let hasExperience = false;
+                experienceItems.forEach(item => {
+                    const title = item.querySelector('.experience-title').value;
+                    const company = item.querySelector('.experience-company').value;
+                    const start = item.querySelector('.experience-start').value;
+                    const end = item.querySelector('.experience-end').value;
+                    const description = item.querySelector('.experience-description').value;
+
+                    if (title && company) {
+                        hasExperience = true;
+                        const div = document.createElement('div');
+                        div.className = 'cv-item';
+                        div.innerHTML = `
+                            <div class="flex justify-between">
+                                <h4 class="cv-item-title">${title}</h4>
+                                <span class="cv-item-date">${start ? start.split('-')[0] : ''} - ${end ? end.split('-')[0] : 'Present'}</span>
+                            </div>
+                            <p class="cv-item-subtitle">${company}</p>
+                            <ul class="list-disc">
+                                ${description.split('\n').filter(line => line.trim() !== '').map(line => `<li>${line.trim()}</li>`).join('')}
+                            </ul>
+                        `;
+                        previewExperience.appendChild(div);
+                    }
+                });
+                document.getElementById('preview-experience-section').style.display = hasExperience ? 'block' : 'none';
+
+                // Education
+                const educationItems = document.querySelectorAll('#education-container .dynamic-item');
+                const previewEducation = document.getElementById('preview-education');
+                previewEducation.innerHTML = '';
+                let hasEducation = false;
+                educationItems.forEach(item => {
+                    const degree = item.querySelector('.education-degree').value;
+                    const institution = item.querySelector('.education-institution').value;
+                    const start = item.querySelector('.education-start').value;
+                    const end = item.querySelector('.education-end').value;
+                    const details = item.querySelector('.education-details').value;
+
+                    if (degree && institution) {
+                        hasEducation = true;
+                        const div = document.createElement('div');
+                        div.className = 'cv-item';
+                        div.innerHTML = `
+                            <div class="flex justify-between">
+                                <h4 class="cv-item-title">${degree}</h4>
+                                <span class="cv-item-date">${start ? start.split('-')[0] : ''} - ${end ? end.split('-')[0] : 'Present'}</span>
+                            </div>
+                            <p class="cv-item-subtitle">${institution}</p>
+                            <p class="text-gray-700">${details}</p>
+                        `;
+                        previewEducation.appendChild(div);
+                    }
+                });
+                document.getElementById('preview-education-section').style.display = hasEducation ? 'block' : 'none';
+
+                // Skills
+                const skillItems = document.querySelectorAll('.skill-input');
+                const previewSkills = document.getElementById('preview-skills');
+                previewSkills.innerHTML = '';
+                let hasSkills = false;
+                skillItems.forEach(item => {
+                    if (item.value) {
+                        hasSkills = true;
+                        const span = document.createElement('span');
+                        span.className = 'skill-item';
+                        span.textContent = item.value;
+                        previewSkills.appendChild(span);
+                    }
+                });
+                document.getElementById('preview-skills-section').style.display = hasSkills ? 'block' : 'none';
+
+                // Projects
+                const projectItems = document.querySelectorAll('#projects-container .dynamic-item');
+                const previewProjects = document.getElementById('preview-projects');
+                previewProjects.innerHTML = '';
+                let hasProjects = false;
+                projectItems.forEach(item => {
+                    const name = item.querySelector('.project-name').value;
+                    const year = item.querySelector('.project-year').value;
+                    const description = item.querySelector('.project-description').value;
+
+                    if (name) {
+                        hasProjects = true;
+                        const div = document.createElement('div');
+                        div.className = 'cv-item';
+                        div.innerHTML = `
+                            <div class="flex justify-between">
+                                <h4 class="cv-item-title">${name}</h4>
+                                <span class="cv-item-date">${year}</span>
+                            </div>
+                            <p class="text-gray-700">${description}</p>
+                        `;
+                        previewProjects.appendChild(div);
+                    }
+                });
+                document.getElementById('preview-projects-section').style.display = hasProjects ? 'block' : 'none';
+            }
+
+            document.getElementById('download-cv').addEventListener('click', () => {
+                const doc = new jsPDF();
+                const margin = 10;
+                let yPosition = 10;
+                const pageWidth = doc.internal.pageSize.getWidth();
+                const pageHeight = doc.internal.pageSize.getHeight();
+
+                const lineHeight = 1.1;
+                const smallSpacing = 1;
+
+                const checkNewPage = (neededHeight) => {
+                    if (yPosition + neededHeight > pageHeight - margin) {
+                        doc.addPage();
+                        yPosition = margin;
+                    }
+                };
+
+                const addTitle = (text, size, isBold = false) => {
+                    if (!text) return;
+                    doc.setFontSize(size);
+                    doc.setFont('helvetica', isBold ? 'bold' : 'normal');
+                    doc.text(text, pageWidth / 2, yPosition, { align: 'center' });
+                    yPosition += size * lineHeight;
+                };
+
+                const addSection = (title) => {
+                    doc.setLineWidth(0.3);
+                    doc.line(margin, yPosition, pageWidth - margin, yPosition);
+                    yPosition += smallSpacing;
+                    doc.setFontSize(11);
+                    doc.setFont('helvetica', 'bold');
+                    doc.text(title.toUpperCase(), margin, yPosition);
+                    yPosition += 11 * lineHeight;
+                };
+
+                const addText = (text, size = 10, isBold = false, indent = 0) => {
+                    if (!text) return;
+                    doc.setFontSize(size);
+                    doc.setFont('helvetica', isBold ? 'bold' : 'normal');
+                    const lines = doc.splitTextToSize(text, pageWidth - 2 * margin - indent);
+                    const neededHeight = lines.length * size * lineHeight;
+                    checkNewPage(neededHeight);
+                    doc.text(lines, margin + indent, yPosition);
+                    yPosition += neededHeight;
+                };
+
+                const addItem = (title, subtitle, date, description) => {
+                    checkNewPage(15);
+                    doc.setFontSize(10);
+                    doc.setFont('helvetica', 'bold');
+                    doc.text(title, margin, yPosition);
+                    if (date) {
+                        doc.text(date, pageWidth - margin, yPosition, { align: 'right' });
+                    }
+                    yPosition += 10 * lineHeight;
+
+                    if (subtitle) {
+                        doc.setFont('helvetica', 'italic');
+                        doc.text(subtitle, margin, yPosition);
+                        yPosition += 10 * lineHeight;
+                    }
+
+                    if (description) {
+                        doc.setFont('helvetica', 'normal');
+                        const bullets = description.split('\n').filter(line => line.trim() !== '');
+                        bullets.forEach(bullet => {
+                            doc.text('• ' + bullet.trim(), margin + 3, yPosition);
+                            yPosition += 9 * lineHeight;
+                        });
+                    }
+                };
+
+                // Personal Information
+                const fullName = document.getElementById('fullName').value;
+                const jobTitle = document.getElementById('jobTitle').value;
+                const email = document.getElementById('email').value;
+                const phone = document.getElementById('phone').value;
+                const location = document.getElementById('location').value;
+                const linkedin = document.getElementById('linkedin').value;
+
+                addTitle(fullName, 14, true);
+                addTitle(jobTitle, 11);
+
+                let contactInfo = [];
+                if (email) contactInfo.push(email);
+                if (phone) contactInfo.push(phone);
+                if (location) contactInfo.push(location);
+                if (linkedin) contactInfo.push(linkedin);
+
+                doc.setFontSize(9);
+                doc.text(contactInfo.join(' | '), pageWidth / 2, yPosition, { align: 'center' });
+                yPosition += 9 * lineHeight * 2;
+
+                // Professional Summary
+                const summaryText = document.getElementById('summary').value;
+                if (summaryText) {
+                    addSection('Professional Summary');
+                    addText(summaryText);
+                    yPosition += 5;
+                }
+
+                // Work Experience
+                const experienceItems = document.querySelectorAll('#experience-container .dynamic-item');
+                if (experienceItems.length > 0) {
+                    addSection('Work Experience');
+                    experienceItems.forEach(item => {
+                        const title = item.querySelector('.experience-title').value;
+                        const company = item.querySelector('.experience-company').value;
+                        const start = item.querySelector('.experience-start').value;
+                        const end = item.querySelector('.experience-end').value;
+                        const description = item.querySelector('.experience-description').value;
+
+                        if (title && company) {
+                            const date = `${start ? start.split('-')[0] : ''} - ${end ? end.split('-')[0] : 'Present'}`;
+                            addItem(title, company, date, description);
+                        }
+                    });
+                    yPosition += 5;
+                }
+
+                // Education
+                const educationItems = document.querySelectorAll('#education-container .dynamic-item');
+                if (educationItems.length > 0) {
+                    addSection('Education');
+                    educationItems.forEach(item => {
+                        const degree = item.querySelector('.education-degree').value;
+                        const institution = item.querySelector('.education-institution').value;
+                        const start = item.querySelector('.education-start').value;
+                        const end = item.querySelector('.education-end').value;
+                        const details = item.querySelector('.education-details').value;
+
+                        if (degree && institution) {
+                            const date = `${start ? start.split('-')[0] : ''} - ${end ? end.split('-')[0] : 'Present'}`;
+                            addItem(degree, institution, date, details);
+                        }
+                    });
+                    yPosition += 5;
+                }
+
+                // Skills
+                const skillItems = document.querySelectorAll('.skill-input');
+                if (skillItems.length > 0) {
+                    addSection('Skills');
+                    const skillsText = Array.from(skillItems)
+                        .map(item => item.value)
+                        .filter(skill => skill.trim() !== '')
+                        .join(' | ');
+                    if (skillsText) {
+                        doc.setFontSize(10);
+                        doc.text(skillsText, margin, yPosition);
+                        yPosition += 10 * lineHeight;
+                    }
+                    yPosition += 5;
+                }
+
+                // Projects
+                const projectItems = document.querySelectorAll('#projects-container .dynamic-item');
+                if (projectItems.length > 0) {
+                    addSection('Projects');
+                    projectItems.forEach(item => {
+                        const name = item.querySelector('.project-name').value;
+                        const year = item.querySelector('.project-year').value;
+                        const description = item.querySelector('.project-description').value;
+
+                        if (name) {
+                            addItem(name, '', year, description);
+                        }
+                    });
+                }
+
+                doc.save('CV.pdf');
+            });
+
+            // New JavaScript for the "Back" button
+            document.getElementById('back-button').addEventListener('click', () => {
+                window.history.back();
+            });
+        });
+    </script>
+</body>
+</html>

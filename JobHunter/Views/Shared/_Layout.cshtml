@@ -1,0 +1,332 @@
+﻿<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>@ViewData["Title"] - EmploymentPlatform</title>
+
+
+
+    <!-- Bootstrap CSS -->
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+
+
+
+
+
+
+    <!-- Bootstrap Icons -->
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
+
+
+
+    <!-- Font Awesome -->
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+
+
+    <!-- Custom CSS -->
+
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+    <link rel="stylesheet" href="~/EmploymentPlatform.styles.css" asp-append-version="true" />
+
+
+
+    <style>
+
+        footer a:hover {
+            color: #ffc107 !important;
+        }
+
+
+
+        footer p {
+            font-size: 1rem;
+        }
+
+
+
+        .navbar-nav .nav-item {
+            margin-left: 15px;
+            margin-right: 15px;
+        }
+
+
+
+        html {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            background-color: cadetblue;
+            overflow-y: scroll;
+        }
+
+
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            color: white;
+            text-decoration: none;
+        }
+
+            .contact-item:hover {
+                color: #ffc107;
+            }
+
+            .contact-item i {
+                margin-right: 0.5rem;
+                font-size: 1.1rem;
+            }
+
+        @@media (min-width: 576px) {
+            .collapse {
+               visibility:visible !important
+           }
+
+        }
+
+        .navbar-collapse.collapse.show {
+            visibility: visible !important
+        }
+    </style>
+
+</head>
+
+<body class="d-flex flex-column min-vh-100">
+
+
+
+    <!-- Header -->
+
+    <header>
+
+        <nav class="navbar navbar-expand-sm" style="background-color: cadetblue;">
+
+            <div class="container-fluid">
+
+
+
+                @await Html.PartialAsync("_LoginPartial")
+
+
+
+                <!-- Center: Brand -->
+
+                <a class="navbar-brand text-white" asp-controller="Home" asp-action="Index">Job Hunter</a>
+
+
+
+                <!-- Mobile Toggle -->
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+                        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+
+                    <span class="navbar-toggler-icon"></span>
+
+                </button>
+
+
+
+                <!-- Right: Main Nav -->
+
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+
+                    <ul class="navbar-nav ms-auto">
+
+                        <li class="nav-item">
+
+                            <a class="nav-link text-white" asp-controller="Home" asp-action="Index">
+
+                                <i class="bi bi-house-door"></i> Home
+
+                            </a>
+
+                        </li>
+
+
+
+                        <li class="nav-item">
+
+                            <a class="nav-link text-white" asp-controller="Jobs" asp-action="CV">
+
+                                <i class="bi-pencil-square"></i> CV Builder
+
+                            </a>
+
+                        </li>
+
+                        <li class="nav-item">
+
+                            <a class="nav-link text-white" asp-controller="Jobs" asp-action="AllJobs">
+
+                                <i class="fa-solid fa-briefcase"></i> Jobs
+
+                            </a>
+
+                        </li>
+
+
+
+                        <li class="nav-item">
+
+                            <a class="nav-link text-white" asp-controller="Jobs" asp-action="MyPostedJobs">
+
+                                <i class=" fas fa-briefcase"></i> My Jobs
+
+                            </a>
+
+                        </li>
+
+
+
+                        <li class="nav-item d-flex align-items-center">
+
+                            <form asp-controller="Jobs" asp-action="Search" method="get" class="d-flex m-0">
+
+                                <input type="text" name="jobtitle" class="form-control form-control-sm me-2" placeholder="Search jobs..." style="max-width: 200px;" />
+
+                                <button type="submit" class="btn btn-outline-light btn-sm">
+
+                                    <i class="fa-solid fa-magnifying-glass"></i>
+
+                                </button>
+
+                            </form>
+
+                        </li>
+
+
+
+
+
+                        <li class="nav-item">
+
+                            <a class="nav-link text-white" asp-controller="Jobs" asp-action="Create">
+
+                                <i class="fa-solid fa-user-plus"></i> Hire
+
+                            </a>
+
+                        </li>
+
+
+
+                    </ul>
+
+
+
+
+
+                </div>
+
+            </div>
+
+        </nav>
+
+    </header>
+
+
+
+    <!-- Main content -->
+
+    <div class="container mt-3">
+
+        <main role="main" class="pb-3">
+
+            @RenderBody()
+
+        </main>
+
+    </div>
+
+
+
+
+
+    <!-- Footer -->
+
+    <footer class="footer" style="background-color: cadetblue; color: white; margin-top: auto; padding: 2rem 0;">
+
+        <div class="container">
+
+            <div class="row justify-content-center text-center align-items-start">
+
+                <!-- Contact Us aligned with About Us -->
+
+                <div class="col-md-3 text-md-start mb-md-0 pt-2">
+
+                    <h5 class="text-white fs-5 fw-bold mb-3">Contact Us</h5>
+
+                    <div class="d-flex flex-column">
+
+                        <a href="mailto:mghnam2022@gmail.com" class="contact-item text-decoration-none">
+
+                            <i class="bi bi-envelope"></i>
+
+                            <span>mghnam2022@gmail.com</span>
+
+                        </a>
+
+                        <a href="https://eg.linkedin.com/in/mohamed-salem-781a66291" target="_blank" class="contact-item text-decoration-none">
+
+                            <i class="bi bi-linkedin"></i>
+
+                            <span>LinkedIn Profile</span>
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- About Us centered with its content -->
+
+                <div class="col-md-5 text-center">
+
+                    <h5 class="text-white d-block mb-2 fs-5 fw-bold">About Us</h5>
+
+                    <p class="small text-white mb-1">We connect job seekers with top companies.</p>
+
+                    <p class="small text-white">Your gateway to career opportunities.</p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </footer>
+
+
+
+    <!-- Scripts -->
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.min.js"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+
+
+
+</body>
+
+</html>

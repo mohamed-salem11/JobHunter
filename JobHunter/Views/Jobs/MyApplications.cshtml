@@ -1,0 +1,94 @@
+﻿@model IEnumerable<JobHunter.Models.Job>
+
+@{
+    ViewData["Title"] = "Applied Jobs";
+}
+
+<style>
+    .jobs-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        justify-content: center;
+        margin-top: 30px;
+    }
+
+    .job-box {
+        width: calc(33.333% - 20px);
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        transition: transform 0.2s ease;
+    }
+
+        .job-box:hover {
+            transform: translateY(-5px);
+        }
+
+    .job-image {
+        width: 100%;
+        height: 180px;
+        object-fit: cover;
+        border-radius: 8px;
+        margin-bottom: 15px;
+    }
+
+    .job-title {
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 10px;
+        text-align: center;
+    }
+
+    .job-detail {
+        font-size: 0.95rem;
+        color: #555;
+        margin-bottom: 6px;
+        text-align: center;
+    }
+
+    @@media (max-width: 1024px) {
+        .job-box
+
+    {
+        width: calc(50% - 20px);
+    }
+
+    }
+
+    @@media (max-width: 768px) {
+        .job-box
+
+    {
+        width: 100%;
+    }
+
+    }
+</style>
+
+<h1 class="text-center">Applied Jobs</h1>
+
+<div class="jobs-container">
+    @foreach (var item in Model)
+    {
+        <div class="job-box">
+            @if (!string.IsNullOrEmpty(item.ImagePath))
+            {
+                <img src="@item.ImagePath" alt="Job Image" class="job-image" />
+            }
+            else
+            {
+                <img src="/images/default-job.png" alt="No Image" class="job-image" />
+            }
+
+            <div class="job-title">@item.JobTitle</div>
+            <div class="job-detail"><strong>Experience:</strong> @item.years_of_experience years</div>
+            <div class="job-detail"><strong>Requirements:</strong> @item.Requirements</div>
+        </div>
+    }
+</div>

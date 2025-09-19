@@ -1,0 +1,120 @@
+﻿@model JobHunter.Models.Job
+
+@{
+    ViewData["Title"] = "Apply for " + Model.JobTitle;
+}
+
+<style>
+    .apply-wrapper {
+        max-width: 700px;
+        margin: 40px auto;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .box {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .form-control:focus {
+        border-color: cadetblue;
+        box-shadow: 0 0 5px cadetblue;
+        outline: none;
+    }
+
+    .btn-custom {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 5px;
+        color: white;
+        transition: all 0.3s ease-in-out;
+    }
+
+    .btn-apply {
+        background-color: cadetblue;
+        border: 1px solid cadetblue;
+    }
+
+        .btn-apply:hover,
+        .btn-apply:focus {
+            background-color: #5f9ea0;
+            box-shadow: 0 0 5px cadetblue;
+        }
+
+    .btn-back {
+        background-color: #6c757d;
+        margin-left: 8px;
+    }
+
+        .btn-back:hover,
+        .btn-back:focus {
+            background-color: #5a6268;
+            box-shadow: 0 0 5px #6c757d;
+        }
+
+    #fileError {
+        display: none;
+        font-size: 0.9rem;
+        margin-top: 5px;
+    }
+</style>
+
+<div class="apply-wrapper">
+
+    <div class="box text-center">
+        <h2>Apply for <span style="color: cadetblue;">@Model.JobTitle</span></h2>
+    </div>
+
+    <div class="box">
+        <form asp-action="Apply" enctype="multipart/form-data" id="applyForm">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+            <input type="hidden" name="jobId" value="@Model.Id" />
+
+            <div class="form-group">
+                <label for="resumeFile" class="control-label">Upload Your CV (PDF only)</label>
+                <input type="file" name="resumeFile" id="resumeFile" class="form-control" required />
+                <span id="fileError" class="text-danger">Only PDF files are allowed.</span>
+            </div>
+
+            <div class="form-group mt-4 d-flex justify-content-start">
+                <input type="submit" value="Apply" class="btn btn-custom btn-apply" />
+                <a asp-action="AllJobs" class="btn btn-custom btn-back">Back</a>
+            </div>
+        </form>
+    </div>
+
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        document.getElementById('applyForm').addEventListener('submit', function (e) {
+            const fileInput = document.getElementById('resumeFile');
+            const fileErrorSpan = document.getElementById('fileError');
+
+            if (!fileInput.files.length) {
+                fileErrorSpan.textContent = "Please upload your CV.";
+                fileErrorSpan.style.display = 'block';
+                e.preventDefault();
+                return;
+            }
+
+            const fileName = fileInput.files[0].name;
+            const fileExtension = fileName.split('.').pop().toLowerCase();
+
+            if (fileExtension !== 'pdf') {
+                e.preventDefault();
+                fileErrorSpan.textContent = "Only PDF files are allowed.";
+                fileErrorSpan.style.display = 'block';
+            } else {
+                fileErrorSpan.style.display = 'none';
+            }
+        });
+    </script>
+}
