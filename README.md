@@ -9,7 +9,7 @@ JobHunter is a full-featured job portal built with ASP.NET Core MVC (.NET 8), de
 - CV upload/download and application tracking
 - Job browsing with advanced search and filtering
 - Secure authentication and role-based access control
-- Full CRUD operations for jobs, applications, and user profiles
+- Full CRUD operations for jobs, applications
 
 ## Tech Stack
 
