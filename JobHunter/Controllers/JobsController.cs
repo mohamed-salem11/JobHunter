@@ -1,5 +1,8 @@
-﻿using JobHunter.Data;
+﻿using AutoMapper;
+using iTextSharp.text.pdf;
+using JobHunter.Data;
 using JobHunter.Models;
+using JobHunter.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -12,57 +15,81 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using pdfParser = iTextSharp.text.pdf.parser;
 namespace JobHunter.Controllers
 {
-    [Authorize]
     public class JobsController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly JobHunterContext _context;
-
-        public JobsController(UserManager<ApplicationUser> userManager, JobHunterContext context)
+        private readonly IWebHostEnvironment _env;
+        private readonly IMapper _mapper;
+        public JobsController(UserManager<ApplicationUser> userManager, JobHunterContext context, IWebHostEnvironment env, IMapper mapper)
         {
 
             _userManager = userManager;
             _context = context;
-
+            _env = env;
+            _mapper = mapper;
         }
 
-        //get all jobs
+    
         public async Task<IActionResult> AllJobs()
         {
+            var jobs = await _context.Jobs.ToListAsync();
             var user = await _userManager.GetUserAsync(User);
-            var jobs = await _context.Jobs.Where(c => c.CreatedById != user.Id).ToListAsync();
+
+            if (user != null)
+            {
+                var appliedJobIds = await _context.Applications
+                    .Where(a => a.ApplicationUserId == user.Id)
+                    .Select(a => a.JobId)
+                    .ToListAsync();
+
+                ViewBag.AppliedJobIds = appliedJobIds;
+                ViewBag.CurrentUserId = user.Id;
+            }
+            else
+            {
+                ViewBag.AppliedJobIds = new List<int>();
+                ViewBag.CurrentUserId = null;
+            }
+
             return View(jobs);
         }
 
-        //search with job title
+      
         public async Task<IActionResult> Search(string jobtitle)
         {
             var user = await _userManager.GetUserAsync(User);
-            var jobs = _context.Jobs.Where(a => a.JobTitle.Contains(jobtitle) && a.CreatedById != user.Id).ToList();
+            var jobs = await _context.Jobs
+          .AsNoTracking() 
+          .Where(a => a.JobTitle.ToLower().Contains(jobtitle) ||
+                      a.Requirements.ToLower().Contains(jobtitle))
+          .ToListAsync(); if (user != null)
+            {
+                var appliedJobIds = await _context.Applications
+                    .Where(a => a.ApplicationUserId == user.Id)
+                    .Select(a => a.JobId)
+                    .ToListAsync();
+
+                ViewBag.AppliedJobIds = appliedJobIds;
+                ViewBag.CurrentUserId = user.Id;
+            }
+            else
+            {
+                ViewBag.AppliedJobIds = new List<int>();
+                ViewBag.CurrentUserId = null;
+            }
             return View(jobs);
         }
-        // GET: Jobs/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
 
-            var job = await _context.Jobs
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (job == null)
-            {
-                return NotFound();
-            }
 
-            return View(job);
-        }
-
-        // GET: Jobs/Create
+    
+        [Authorize]
         public IActionResult Create()
         {
             return View();
@@ -118,7 +145,8 @@ namespace JobHunter.Controllers
             return RedirectToAction(nameof(MyPostedJobs));
         }
 
-        // get Jobs i have posted
+  
+        [Authorize]
         public async Task<IActionResult> MyPostedJobs()
         {
             var user = await _userManager.GetUserAsync(User);
@@ -126,8 +154,8 @@ namespace JobHunter.Controllers
             var jobs = await _context.Jobs.Where(c => c.CreatedById == user.Id).ToListAsync();
             return View(jobs);
         }
-
-        // GET: Jobs/Apply/5      
+ 
+            [Authorize]  
         public async Task<IActionResult> Apply(int? id)
         {
             if (id == null)
@@ -140,7 +168,6 @@ namespace JobHunter.Controllers
             {
                 return NotFound();
             }
-
             return View(job);
         }
 
@@ -171,7 +198,7 @@ namespace JobHunter.Controllers
    
             var existingApplication = await _context.Applications
                                                   .FirstOrDefaultAsync(a => a.ApplicationUserId == user.Id && a.JobId == jobId);
-
+       
             if (existingApplication != null)
             {
                 ModelState.AddModelError(string.Empty, "You have already applied for this job.");
@@ -197,8 +224,7 @@ namespace JobHunter.Controllers
             {
                 JobId = jobId,
                 ApplicationUserId = user.Id,
-                ResumeFilePath = $"/resumes/{fileName}",
-                AppliedDate = DateTime.Now
+                ResumeFilePath = $"/resumes/{fileName}"
             };
 
             _context.Applications.Add(jobApplication);
@@ -206,8 +232,8 @@ namespace JobHunter.Controllers
 
             return RedirectToAction(nameof(MyApplications));
         }
-
-        //My Applications
+         
+        [Authorize]
         public async Task<IActionResult> MyApplications()
         {
             var user = await _userManager.GetUserAsync(User);
@@ -218,30 +244,125 @@ namespace JobHunter.Controllers
             return View(jobs);
         }
 
-        // View Applications
-
         public async Task<IActionResult> ViewApplications(int id)
         {
-            var resumes = await _context.Applications.Where(a => a.JobId == id).Select(a => a.ResumeFilePath).ToListAsync();
-            return View(resumes);
-        }
-        // GET: Jobs/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null)
+            var currentUserId = _userManager.GetUserId(User);
+            var job = await _context.Jobs.FirstOrDefaultAsync(j => j.Id == id);
+
+            if (job == null) return NotFound();
+            if (job.CreatedById != currentUserId) return Forbid();
+
+            var applications = await _context.Applications
+                .Include(a => a.Applicant)
+                .Where(a => a.JobId == id)
+                .ToListAsync();
+
+            var requirementsText = (job.Requirements ?? "").ToLowerInvariant();
+            var reqTokens = ExtractMeaningfulTokens(requirementsText);
+
+      
+            var result = _mapper.Map<List<CvScoreItem>>(applications);
+ 
+            foreach (var item in result)
             {
-                return NotFound();
+                if (!string.IsNullOrEmpty(item.ResumeFilePath) && reqTokens.Any())
+                {
+                    try
+                    {
+                        var fullPath = Path.Combine(_env.WebRootPath, item.ResumeFilePath.TrimStart('/'));
+                        var cvText = ReadPdfText(fullPath).ToLowerInvariant();
+
+                        int matched = reqTokens.Count(token => cvText.Contains(token));
+                        item.Score = Math.Round(Math.Min(100, 3 * (double)matched / reqTokens.Count * 100), 1);
+                    }
+                    catch
+                    {
+                        item.Score = -1;
+                    }
+                }
             }
 
-            var job = await _context.Jobs.FindAsync(id);
-            if (job == null)
+            ViewBag.JobTitle = job.JobTitle;
+            return View(result);
+        }
+
+
+        private string ReadPdfText(string fullPath)
+        {
+            var sb = new StringBuilder();
+            using (var reader = new iTextSharp.text.pdf.PdfReader(fullPath))
             {
-                return NotFound();
+                for (int i = 1; i <= reader.NumberOfPages; i++)
+                {
+                    sb.AppendLine(iTextSharp.text.pdf.parser.PdfTextExtractor.GetTextFromPage(reader, i));
+                }
             }
+            return sb.ToString();
+        }
+
+        private List<string> ExtractMeaningfulTokens(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return new();
+
+            var stopWords = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+    {
+        "the","and","or","in","of","to","a","an","is","are","for","with","on",
+        "at","by","from","as","be","this","that","have","has","will","should",
+        "must","can","may","not","no","but","we","our","your","its","you",
+        "experience","required","preferred","ability","knowledge","working",
+        "strong","good","excellent","proficient","minimum","years","year",
+        "month","months","work","job","position","role","team","skills","skill"
+    };
+
+            var tokens = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+           
+            foreach (Match m in Regex.Matches(text, @"[a-z#\+\.]{2,}(?:\s+[a-z#\+\.]{2,}){1,2}"))
+            {
+                var phrase = m.Value.Trim();
+                if (phrase.Split(' ').All(w => !stopWords.Contains(w)) && phrase.Length >= 4)
+                    tokens.Add(phrase);
+            }
+
+ 
+            foreach (Match m in Regex.Matches(text, @"[a-z#\+][a-z0-9#\+\.\-]{1,}"))
+            {
+                var word = m.Value.Trim();
+                if (!stopWords.Contains(word) && word.Length >= 2)
+                    tokens.Add(word);
+            }
+
+    
+            foreach (Match m in Regex.Matches(text, @"[\u0600-\u06FF]{3,}"))
+            {
+                var word = m.Value.Trim();
+                if (!stopWords.Contains(word))
+                    tokens.Add(word);
+            }
+
+            return tokens.ToList();
+        }
+
+
+    
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var job = await _context.Jobs.FirstOrDefaultAsync(j => j.Id == id);
+            if (job == null) return NotFound();
+
+            var currentUserId = _userManager.GetUserId(User);
+ 
+            if (job.CreatedById != currentUserId)
+            {
+                return Forbid();
+            }
+
             return View(job);
         }
 
-        // POST: Jobs/Edit/5
+       
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, Job job, IFormFile imageFile)
@@ -309,8 +430,7 @@ namespace JobHunter.Controllers
                 {
                     job.CreatedById = user.Id;
 
-                    existingJob.JobTitle = job.JobTitle;
-                    existingJob.years_of_experience = job.years_of_experience;
+                    existingJob.JobTitle = job.JobTitle;                    
                     existingJob.Requirements = job.Requirements;
                     existingJob.ImagePath = job.ImagePath;
 
@@ -331,7 +451,7 @@ namespace JobHunter.Controllers
             }
             return View(job);
         }
-        // GET: Jobs/Delete/5
+  
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -345,11 +465,16 @@ namespace JobHunter.Controllers
             {
                 return NotFound();
             }
+            var currentUserId = _userManager.GetUserId(User);
+
+            if (job.CreatedById != currentUserId)
+            {
+                return Forbid();
+            }
 
             return View(job);
         }
-
-        // POST: Jobs/Delete/5
+ 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)

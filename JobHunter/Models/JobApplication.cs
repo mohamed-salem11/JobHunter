@@ -15,7 +15,7 @@ namespace JobHunter.Models
         public virtual ApplicationUser Applicant { get; set; }
 
         public string ResumeFilePath { get; set; }
-        public DateTime AppliedDate { get; set; } 
+        
     }
 
 }

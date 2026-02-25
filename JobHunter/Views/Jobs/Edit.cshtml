@@ -1,104 +1,195 @@
 ﻿@model JobHunter.Models.Job
 
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Edit Job";
 }
 
 <style>
-    .form-control:focus {
-        border-color: cadetblue !important;
-        box-shadow: 0 0 0 0.25rem rgba(95, 158, 160, 0.5);
+ 
+    .edit-container {
+        background-color: #f8f9fa;
+        padding: 40px 0;
+        min-height: 80px;
     }
 
-    .form-check-input {
-        accent-color: cadetblue !important;
+    .edit-card {
+        background: white;
+        border: none;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        overflow: hidden;
     }
 
-        .form-check-input:checked {
-            background-color: cadetblue;
-            border: 2px solid cadetblue;
+    .card-header-custom {
+        background: linear-gradient(135deg, #5f9ea0 0%, #2c3e50 100%);
+        color: white;
+        padding: 25px;
+        border: none;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #34495e;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .form-control {
+        border-radius: 10px;
+        padding: 12px 15px;
+        border: 1px solid #dee2e6;
+        transition: all 0.3s ease;
+    }
+
+        .form-control:focus {
+            border-color: cadetblue !important;
+            box-shadow: 0 0 0 0.25rem rgba(95, 158, 160, 0.15) !important;
         }
 
-    .btn-custom {
-        padding: 8px 16px;
-        border: none;
-        border-radius: 5px;
-        color: white;
-        transition: background-color 0.3s ease;
+    /* تحسين منطقة الصورة */
+    .image-preview-container {
+        background: #f1f4f6;
+        border-radius: 15px;
+        padding: 20px;
+        text-align: center;
+        margin-bottom: 20px;
+        border: 2px dashed #cbd5e0;
+    }
+
+    .current-img {
+        max-width: 100%;
+        height: 180px;
+        object-fit: cover;
+        border-radius: 12px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .btn-action {
+        padding: 12px 25px;
+        border-radius: 10px;
+        font-weight: 700;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
     }
 
     .btn-save {
         background-color: cadetblue;
+        border: none;
+        color: white;
+        flex: 2;
     }
 
         .btn-save:hover {
-            background-color: #5f9ea0;
+            background-color: #4a7c7e;
+            transform: translateY(-2px);
         }
 
-    .btn-back {
-        background-color: #6c757d;
-        margin-left: 8px; 
+    .btn-cancel {
+        background-color: #e2e8f0;
+        color: #4a5568;
+        border: none;
+        flex: 1;
+        text-decoration: none;
     }
 
-        .btn-back:hover {
-            background-color: #5a6268;
+        .btn-cancel:hover {
+            background-color: #cbd5e0;
+            color: #2d3748;
         }
+
+    .section-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: cadetblue;
+        margin-bottom: 15px;
+        border-bottom: 2px solid #edf2f7;
+        padding-bottom: 10px;
+    }
 </style>
 
-<h1>Edit Job</h1>
+<div class="edit-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="edit-card">
+                    <div class="card-header-custom text-center">
+                        <h2 class="mb-0"><i class="fas fa-edit me-2"></i> Update Job Details</h2>
+                        <p class="mb-0 opacity-75">Modify your job posting information</p>
+                    </div>
 
-<hr />
-<div class="row">
-    <div class="col-md-6">
-        <form asp-action="Edit" enctype="multipart/form-data">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Id" />
+                    <div class="card-body p-4 p-md-5">
+                        <form asp-action="Edit" enctype="multipart/form-data">
+                            <div asp-validation-summary="ModelOnly" class="text-danger mb-4"></div>
+                            <input type="hidden" asp-for="Id" />
+                            <input type="hidden" asp-for="ImagePath" />
 
-            <div class="form-group">
-                <label asp-for="JobTitle" class="control-label"></label>
-                <input asp-for="JobTitle" class="form-control" />
-                <span asp-validation-for="JobTitle" class="text-danger"></span>
-            </div>
+                            <div class="row">
+                                <div class="col-md-7">
+                                    <div class="section-title">General Information</div>
 
-            <div class="form-group">
-                <label asp-for="years_of_experience" class="control-label"></label>
-                <input asp-for="years_of_experience" class="form-control" />
-                <span asp-validation-for="years_of_experience" class="text-danger"></span>
-            </div>
+                                    <div class="mb-4">
+                                        <label asp-for="JobTitle" class="form-label">
+                                            <i class="fas fa-briefcase"></i> Job Title
+                                        </label>
+                                        <input asp-for="JobTitle" class="form-control" placeholder="e.g. Senior Software Engineer" />
+                                        <span asp-validation-for="JobTitle" class="text-danger small"></span>
+                                    </div>
 
-            <div class="form-group">
-                <label asp-for="Requirements" class="control-label"></label>
-                <input asp-for="Requirements" class="form-control" />
-                <span asp-validation-for="Requirements" class="text-danger"></span>
-            </div>
+                                    <div class="mb-4">
+                                        <label asp-for="Requirements" class="form-label">
+                                            <i class="fas fa-list-ul"></i> Job Requirements
+                                        </label>
+                                        <textarea asp-for="Requirements" class="form-control" rows="8"
+                                                  placeholder="• Requirement 1&#10;• Requirement 2..."></textarea>
+                                        <span asp-validation-for="Requirements" class="text-danger small"></span>
+                                    </div>
+                                </div>
 
-            @if (!string.IsNullOrEmpty(Model.ImagePath))
-            {
-                <div class="form-group">
-                    <label class="control-label">Current Image</label>
-                    <div>
-                        <img src="@Model.ImagePath" alt="Current Job Image" style="max-width: 200px; max-height: 200px;" />
+                                <div class="col-md-5">
+                                    <div class="section-title">Job Branding</div>
+
+                                    <div class="image-preview-container">
+                                        <label class="form-label justify-content-center mb-3">Current Visual</label>
+                                        @if (!string.IsNullOrEmpty(Model.ImagePath))
+                                        {
+                                            <img src="@Model.ImagePath" alt="Job Preview" class="current-img mb-3" />
+                                        }
+                                        else
+                                        {
+                                            <div class="text-muted p-4">No image uploaded</div>
+                                        }
+
+                                        <div class="mt-2">
+                                            <label for="imageFile" class="btn btn-outline-secondary btn-sm w-100">
+                                                <i class="fas fa-camera"></i> Change Image
+                                            </label>
+                                            <input name="imageFile" type="file" id="imageFile" class="d-none" onchange="previewImage(this)" />
+                                        </div>
+                                    </div>
+                                    <small class="text-muted d-block text-center mt-1">Recommended: JPG or PNG</small>
+                                </div>
+                            </div>
+
+                            <hr class="my-4">
+
+                            <div class="d-flex gap-3">
+                                <button type="submit" class="btn-action btn-save">
+                                    <i class="fas fa-save"></i> Save Changes
+                                </button>
+                                <a asp-action="MyPostedJobs" class="btn-action btn-cancel">
+                                    Cancel
+                                </a>
+                            </div>
+                        </form>
                     </div>
                 </div>
-            }
-
-            <div class="form-group">
-                <label for="imageFile" class="control-label">Update Image</label>
-                <input name="imageFile" type="file" class="form-control" id="imageFile" />
-                @if (ViewData.ModelState["imageFile"]?.Errors.Count > 0)
-                {
-                    <span class="text-danger">@ViewData.ModelState["imageFile"].Errors[0].ErrorMessage</span>
-                }
-                <small class="form-text text-muted">Only JPG, JPEG, PNG files are allowed (optional - leave empty to keep current image)</small>
             </div>
-
-            <input type="hidden" asp-for="ImagePath" />
-
-            <div class="form-group mt-3 d-flex">
-                <input type="submit" value="Save" class="btn btn-custom btn-save" />
-                <a asp-controller="Jobs" asp-action="MyPostedJobs" class="btn btn-custom btn-back">Back</a>
-            </div>
-        </form>
+        </div>
     </div>
 </div>
 
@@ -106,4 +197,18 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+
+    <script>
+      
+        function previewImage(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    var img = document.querySelector('.current-img');
+                    if(img) img.src = e.target.result;
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
 }

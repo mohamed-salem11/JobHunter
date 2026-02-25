@@ -7,8 +7,8 @@ namespace JobHunter.Models
       
         public int Id { get; set; }
         public string JobTitle { get; set; }
-        public string? CreatedById { get; set; } 
-        public string years_of_experience { get; set; }
+        public string? CreatedById { get; set; }
+        public DateTime PostedDate { get; set; } = DateTime.Now;
         public string Requirements {  get; set; }
 
         public string ImagePath { get; set; }
