@@ -15,7 +15,39 @@
 }
 
 <style>
-    
+ 
+    .pagination {
+        margin-top: 30px;
+        justify-content: center;
+        gap: 5px;
+    }
+     
+    .page-link {
+        color: cadetblue; 
+        border: 1px solid #dee2e6;
+        border-radius: 8px !important;  
+        padding: 8px 16px;
+        transition: all 0.3s ease;
+    }
+
+        .page-link:hover {
+            background-color: #f8f9fa;
+            color: #4a7c7d;  
+            border-color: cadetblue;
+        }
+ 
+    .page-item.active .page-link {
+        background-color: cadetblue !important;  
+        border-color: cadetblue !important;
+        color: white !important;  
+        box-shadow: 0 4px 10px rgba(95, 158, 160, 0.3);
+    }
+
+    .page-link:focus {
+        box-shadow: 0 0 0 0.2rem rgba(95, 158, 160, 0.25);
+    }
+ 
+
     .jobs-header {
         background: linear-gradient(135deg, #5f9ea0 0%, #2c3e50 100%);
         padding: 60px 20px;
@@ -277,3 +309,13 @@
         </div>
     }
 </div>
+<nav aria-label="Page navigation">
+    <ul class="pagination">
+        @for (int i = 1; i <= ViewBag.TotalPages; i++)
+        {
+            <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                <a class="page-link" href="@Url.Action("AllJobs", new { page = i })">@i</a>
+            </li>
+        }
+    </ul>
+</nav>

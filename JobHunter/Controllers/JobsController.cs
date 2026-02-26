@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Identity.Client;
 using Microsoft.VisualBasic;
 using System;
@@ -19,6 +20,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using pdfParser = iTextSharp.text.pdf.parser;
+using System.Text.Json;
 namespace JobHunter.Controllers
 {
     public class JobsController : Controller
@@ -27,19 +29,52 @@ namespace JobHunter.Controllers
         private readonly JobHunterContext _context;
         private readonly IWebHostEnvironment _env;
         private readonly IMapper _mapper;
-        public JobsController(UserManager<ApplicationUser> userManager, JobHunterContext context, IWebHostEnvironment env, IMapper mapper)
+        private readonly IDistributedCache _cache;
+        public JobsController(UserManager<ApplicationUser> userManager, JobHunterContext context, IDistributedCache cache, IWebHostEnvironment env, IMapper mapper)
         {
 
             _userManager = userManager;
             _context = context;
             _env = env;
             _mapper = mapper;
+            _cache = cache;
         }
 
-    
-        public async Task<IActionResult> AllJobs()
+
+        public async Task<IActionResult> AllJobs(int page = 1)
         {
-            var jobs = await _context.Jobs.ToListAsync();
+            int pageSize = 9;
+            var version = await _cache.GetStringAsync("jobs_version") ?? "1";
+            var cacheKey = $"jobs_v{version}_page_{page}";
+            var cachedJobs = await _cache.GetStringAsync(cacheKey);
+            List<Job> jobs;
+
+            if (string.IsNullOrEmpty(cachedJobs))
+            {
+                var jobsQuery = _context.Jobs.OrderByDescending(j => j.PostedDate);
+                var totalJobs = await jobsQuery.CountAsync();
+
+                jobs = await jobsQuery
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync();
+ 
+                var serialized = JsonSerializer.Serialize(jobs);
+                await _cache.SetStringAsync(cacheKey, serialized,
+                    new DistributedCacheEntryOptions
+                    {
+                        AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10)
+                    });
+
+                ViewBag.TotalPages = (int)Math.Ceiling(totalJobs / (double)pageSize);
+            }
+            else
+            {
+                jobs = JsonSerializer.Deserialize<List<Job>>(cachedJobs);
+                var totalJobs = await _context.Jobs.CountAsync();
+                ViewBag.TotalPages = (int)Math.Ceiling(totalJobs / (double)pageSize);
+            }
+
             var user = await _userManager.GetUserAsync(User);
 
             if (user != null)
@@ -58,10 +93,12 @@ namespace JobHunter.Controllers
                 ViewBag.CurrentUserId = null;
             }
 
+            ViewBag.CurrentPage = page;
             return View(jobs);
         }
 
-      
+
+
         public async Task<IActionResult> Search(string jobtitle)
         {
             var user = await _userManager.GetUserAsync(User);
@@ -141,7 +178,8 @@ namespace JobHunter.Controllers
 
             _context.Jobs.Add(job);
             await _context.SaveChangesAsync();
-
+            var version = await _cache.GetStringAsync("jobs_version") ?? "1";
+            await _cache.SetStringAsync("jobs_version", (int.Parse(version) + 1).ToString());
             return RedirectToAction(nameof(MyPostedJobs));
         }
 
@@ -435,6 +473,8 @@ namespace JobHunter.Controllers
                     existingJob.ImagePath = job.ImagePath;
 
                     await _context.SaveChangesAsync();
+                    var version = await _cache.GetStringAsync("jobs_version") ?? "1";
+                    await _cache.SetStringAsync("jobs_version", (int.Parse(version) + 1).ToString());
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -486,6 +526,8 @@ namespace JobHunter.Controllers
             }
 
             await _context.SaveChangesAsync();
+            var version = await _cache.GetStringAsync("jobs_version") ?? "1";
+            await _cache.SetStringAsync("jobs_version", (int.Parse(version) + 1).ToString());
             return RedirectToAction(nameof(MyPostedJobs));
         }
 

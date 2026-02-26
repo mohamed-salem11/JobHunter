@@ -17,6 +17,11 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options => options.S
 
 builder.Services.AddSignalR();
 builder.Services.AddAutoMapper(typeof(Program));
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = "redis-15455.c80.us-east-1-2.ec2.cloud.redislabs.com:15455,password=semFuADD3VugCBOmH6Z5xrsCDY9RWyYG,ssl=false";
+    options.InstanceName = "JobHunter_";
+});
 var app = builder.Build();
 
  

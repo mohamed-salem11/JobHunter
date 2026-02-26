@@ -2,6 +2,7 @@
 
 namespace JobHunter.Models
 {
+    [Index(nameof(JobTitle), nameof(PostedDate))]
     public class Job
     {
       
