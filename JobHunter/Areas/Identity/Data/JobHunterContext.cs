@@ -15,7 +15,7 @@ public class JobHunterContext : IdentityDbContext<ApplicationUser>
 
       public DbSet<Job> Jobs { get; set; }
     public DbSet<ApplicationUser> ApplicationUsers {  get; set; }
-
+    public DbSet<UserInterest> UserInterests { get; set; }
     public DbSet<JobApplication> Applications { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)

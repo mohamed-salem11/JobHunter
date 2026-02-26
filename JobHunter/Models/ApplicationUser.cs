@@ -5,7 +5,7 @@ namespace JobHunter.Models
     {
  
         public string? FullName {  get; set; }
-      
+        public virtual ICollection<UserInterest> Interests { get; set; } = new List<UserInterest>();
 
     }
 }

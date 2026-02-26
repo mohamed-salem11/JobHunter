@@ -1,0 +1,218 @@
+﻿@model List<string>
+@{
+    ViewData["Title"] = "Update Career Interests";
+    var mainColor = "cadetblue";
+}
+
+<style>
+    body {
+        background-color: #f8fafb;
+        font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    .edit-wrapper {
+        min-height: 85vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+
+    .edit-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.06);
+        width: 100%;
+        max-width: 550px;
+        overflow: hidden;
+        border: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .edit-card-header {
+        background-color: @mainColor;
+        padding: 35px 30px;
+        text-align: center;
+        color: white;
+    }
+
+        .edit-card-header h3 {
+            margin: 0;
+            font-weight: 700;
+            font-size: 1.6rem;
+            letter-spacing: 0.5px;
+        }
+
+        .edit-card-header p {
+            margin: 10px 0 0;
+            font-size: 0.95rem;
+            opacity: 0.9;
+        }
+
+    .edit-card-body {
+        padding: 40px;
+    }
+
+    /* Success Message Styling */
+    .alert-custom {
+        background-color: #f0f7f7;
+        border: none;
+        border-left: 5px solid @mainColor;
+        color: #2c3e50;
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 25px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 500;
+        transition: opacity 0.6s ease;
+    }
+
+    .alert-icon {
+        color: @mainColor;
+        font-size: 1.3rem;
+    }
+
+    /* Form Styling */
+    .form-group-edit {
+        margin-bottom: 25px;
+    }
+
+        .form-group-edit label {
+            display: block;
+            margin-bottom: 10px;
+            color: @mainColor;
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+        }
+
+    .input-edit {
+        width: 100%;
+        padding: 14px 18px;
+        border: 2px solid #edf2f4;
+        border-radius: 10px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        outline: none;
+        color: #2d3436;
+        background-color: #fcfdfe;
+        font-size: 1rem;
+    }
+
+        .input-edit:focus {
+            border-color: @mainColor;
+            background-color: #fff;
+            box-shadow: 0 0 0 4px rgba(95, 158, 160, 0.15);
+        }
+
+        .input-edit::placeholder {
+            color: #b2bec3;
+        }
+
+    .btn-update {
+        background-color: @mainColor;
+        color: white;
+        border: none;
+        padding: 16px;
+        border-radius: 10px;
+        width: 100%;
+        font-weight: 700;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+
+        .btn-update:hover {
+            background-color: #4d8082;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(95, 158, 160, 0.25);
+        }
+
+        .btn-update:active {
+            transform: translateY(0);
+        }
+
+    .footer-note {
+        text-align: center;
+        margin-top: 25px;
+        font-size: 0.85rem;
+        color: #b2bec3;
+    }
+</style>
+
+<div class="edit-wrapper">
+    <div class="edit-card">
+        <div class="edit-card-header">
+            <h3>Update Your Interests</h3>
+            <p>Refine your focus to get better job recommendations</p>
+        </div>
+
+        <div class="edit-card-body">
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div id="successAlert" class="alert-custom">
+                    <span class="alert-icon">✔</span>
+                    <span>@TempData["SuccessMessage"]</span>
+                </div>
+            }
+
+            <form asp-action="EditInterests" method="post">
+                <div class="form-group-edit">
+                    <label>Primary Focus</label>
+                    <input type="text"
+                           name="updatedInterests"
+                           class="input-edit"
+                           value="@(Model.Count > 0 ? Model[0] : string.Empty)"
+                           placeholder="e.g. Senior .NET Developer"
+                           required />
+                </div>
+
+                <div class="form-group-edit">
+                    <label>Secondary Focus</label>
+                    <input type="text"
+                           name="updatedInterests"
+                           class="input-edit"
+                           value="@(Model.Count > 1 ? Model[1] : string.Empty)"
+                           placeholder="e.g. SQL Specialist" />
+                </div>
+
+                <div class="form-group-edit">
+                    <label>Additional Skills</label>
+                    <input type="text"
+                           name="updatedInterests"
+                           class="input-edit"
+                           value="@(Model.Count > 2 ? Model[2] : string.Empty)"
+                           placeholder="e.g. Cloud Architecture" />
+                </div>
+
+                <button type="submit" class="btn-update">
+                    Save Changes
+                </button>
+            </form>
+
+            <div class="footer-note">
+                Updates will be applied to your job feed immediately.
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const alert = document.getElementById('successAlert');
+        if (alert) {
+            setTimeout(function () {
+                alert.style.opacity = "0";
+                setTimeout(function () {
+                    alert.remove();
+                }, 600);
+            }, 3500);
+        }
+    });
+</script>

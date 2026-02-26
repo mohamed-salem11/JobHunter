@@ -40,7 +40,6 @@ namespace JobHunter.Controllers
             _cache = cache;
         }
 
-
         public async Task<IActionResult> AllJobs(int page = 1)
         {
             int pageSize = 9;
@@ -49,16 +48,42 @@ namespace JobHunter.Controllers
             var cachedJobs = await _cache.GetStringAsync(cacheKey);
             List<Job> jobs;
 
+            var user = await _userManager.GetUserAsync(User);
+
             if (string.IsNullOrEmpty(cachedJobs))
             {
                 var jobsQuery = _context.Jobs.OrderByDescending(j => j.PostedDate);
-                var totalJobs = await jobsQuery.CountAsync();
 
-                jobs = await jobsQuery
-                    .Skip((page - 1) * pageSize)
-                    .Take(pageSize)
-                    .ToListAsync();
- 
+                if (user != null)
+                { 
+                    var userInterests = await _context.UserInterests
+                        .Where(ui => ui.UserId == user.Id)
+                        .Select(ui => ui.Interest.ToLower())
+                        .ToListAsync();
+                     
+                    var allJobs = await jobsQuery.ToListAsync();
+                     
+                    jobs = allJobs
+                        .OrderByDescending(j =>
+                            userInterests.Count(interest =>
+                                (j.JobTitle?.ToLower().Contains(interest) ?? false) ||                           
+                                interest.Split(' ').Any(word =>
+                                    (j.JobTitle?.ToLower().Contains(word) ?? false) 
+                                  
+                                )
+                            )
+                        ) 
+                        .ThenByDescending(j => j.PostedDate)  
+                        .ToList();
+                }
+                else
+                {
+                    jobs = await jobsQuery.ToListAsync();
+                }
+
+
+
+                var totalJobs = jobs.Count;
                 var serialized = JsonSerializer.Serialize(jobs);
                 await _cache.SetStringAsync(cacheKey, serialized,
                     new DistributedCacheEntryOptions
@@ -71,12 +96,12 @@ namespace JobHunter.Controllers
             else
             {
                 jobs = JsonSerializer.Deserialize<List<Job>>(cachedJobs);
-                var totalJobs = await _context.Jobs.CountAsync();
+                var totalJobs = jobs.Count;
                 ViewBag.TotalPages = (int)Math.Ceiling(totalJobs / (double)pageSize);
             }
-
-            var user = await _userManager.GetUserAsync(User);
-
+ 
+            jobs = jobs.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+ 
             if (user != null)
             {
                 var appliedJobIds = await _context.Applications
@@ -96,7 +121,7 @@ namespace JobHunter.Controllers
             ViewBag.CurrentPage = page;
             return View(jobs);
         }
-
+         
 
 
         public async Task<IActionResult> Search(string jobtitle)

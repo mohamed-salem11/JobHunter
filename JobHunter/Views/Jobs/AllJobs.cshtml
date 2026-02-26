@@ -1,4 +1,29 @@
-﻿@model IEnumerable<JobHunter.Models.Job>
+﻿@if (TempData["SuccessMessage"] != null)
+{
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
+    <div id="jobsToast" class="animate__animated animate__fadeInDown"
+         style="position: fixed; top: 25px; left: 50%; transform: translateX(-50%); z-index: 10000;
+                    background-color: cadetblue; color: white; padding: 14px 35px; border-radius: 12px;
+                    box-shadow: 0 10px 25px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 12px;
+                    border-bottom: 3px solid rgba(0,0,0,0.1);">
+        <i class="bi bi-check2-circle" style="font-size: 1.4rem;"></i>
+        <span style="font-weight: 600;">@TempData["SuccessMessage"]</span>
+    </div>
+
+    <script>
+        setTimeout(function () {
+            const toast = document.getElementById('jobsToast');
+            if (toast) {
+                toast.classList.remove('animate__fadeInDown');
+                toast.classList.add('animate__fadeOutUp');
+                setTimeout(() => toast.remove(), 500);
+            }
+        }, 3000);
+    </script>
+}
+@model IEnumerable<JobHunter.Models.Job>
 
 @{
     ViewData["Title"] = "All Jobs";
@@ -231,7 +256,7 @@
 <div class="jobs-header">
     <div class="header-content">
         <h1>Welcome to JobHunter</h1>
-        <p>Your gateway to the next big opportunity</p>
+        <p>explore jobs recomendded to you</p>
     </div>
 </div>
 

@@ -1,0 +1,139 @@
+﻿@model List<string>
+@{
+    ViewData["Title"] = "Set Your Interests";
+    var mainColor = "cadetblue";
+}
+
+<style>
+    body {
+        background-color: #f4f7f6;  
+    }
+
+    .setup-wrapper {
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+
+    .interest-card {
+        background: white;
+        border-top: 5px solid @mainColor;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        padding: 40px;
+        width: 100%;
+        max-width: 500px;
+    }
+
+    .interest-header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+        .interest-header h2 {
+            color: #444;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .interest-header p {
+            color: #777;
+            font-size: 0.95rem;
+        }
+
+    .form-group-custom {
+        margin-bottom: 20px;
+        position: relative;
+    }
+
+        .form-group-custom label {
+            display: block;
+            margin-bottom: 8px;
+            color: @mainColor;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+    .input-custom {
+        width: 100%;
+        padding: 12px 15px;
+        border: 2px solid #e0e6e8;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        outline: none;
+        color: #333;
+    }
+
+        .input-custom:focus {
+            border-color: @mainColor;
+            box-shadow: 0 0 8px rgba(95, 158, 160, 0.2);
+        }
+
+    .btn-submit {
+        background-color: @mainColor;
+        color: white;
+        border: none;
+        padding: 15px;
+        border-radius: 8px;
+        width: 100%;
+        font-weight: 700;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 10px;
+        text-transform: uppercase;
+    }
+
+        .btn-submit:hover {
+            background-color: #4d8082;  
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+    .info-footer {
+        text-align: center;
+        margin-top: 20px;
+        font-size: 0.8rem;
+        color: #999;
+    }
+</style>
+
+<div class="setup-wrapper">
+    <div class="interest-card">
+        <div class="interest-header">
+            <h2>Career Interests</h2>
+            <p>
+                Provide your top career interests to help us recommend the most relevant job opportunities for you.
+            </p>
+        </div>
+
+        <form asp-action="SetupInterests" method="post">
+            <div class="form-group-custom">
+                <label>Primary Interest</label>
+                <input type="text" name="selectedInterests" class="input-custom" placeholder="e.g. ASP.NET Core Developer" required />
+            </div>
+
+            <div class="form-group-custom">
+                <label>Secondary Interest</label>
+                <input type="text" name="selectedInterests" class="input-custom" placeholder="e.g. Software Engineer" />
+            </div>
+
+            <div class="form-group-custom">
+                <label>Additional Skills</label>
+                <input type="text" name="selectedInterests" class="input-custom" placeholder="e.g. BackEnd Engineer" />
+            </div>
+
+            <button type="submit" class="btn-submit">
+                Save & Continue
+            </button>
+        </form>
+
+        <div class="info-footer">
+            You can update these preferences anytime from your profile settings.
+        </div>
+    </div>
+</div>
