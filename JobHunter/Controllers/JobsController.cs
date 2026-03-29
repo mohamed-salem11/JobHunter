@@ -30,7 +30,9 @@ namespace JobHunter.Controllers
         private readonly IWebHostEnvironment _env;
         private readonly IMapper _mapper;
         private readonly IDistributedCache _cache;
-        public JobsController(UserManager<ApplicationUser> userManager, JobHunterContext context, IDistributedCache cache, IWebHostEnvironment env, IMapper mapper)
+        private readonly EmailService _emailService;
+
+        public JobsController(UserManager<ApplicationUser> userManager, JobHunterContext context, EmailService emailService, IDistributedCache cache, IWebHostEnvironment env, IMapper mapper)
         {
 
             _userManager = userManager;
@@ -38,6 +40,8 @@ namespace JobHunter.Controllers
             _env = env;
             _mapper = mapper;
             _cache = cache;
+            _emailService = emailService;
+
         }
 
         public async Task<IActionResult> AllJobs(int page = 1)
@@ -205,6 +209,8 @@ namespace JobHunter.Controllers
             await _context.SaveChangesAsync();
             var version = await _cache.GetStringAsync("jobs_version") ?? "1";
             await _cache.SetStringAsync("jobs_version", (int.Parse(version) + 1).ToString());
+             
+            
             return RedirectToAction(nameof(MyPostedJobs));
         }
 
@@ -291,7 +297,22 @@ namespace JobHunter.Controllers
             };
 
             _context.Applications.Add(jobApplication);
-            await _context.SaveChangesAsync();
+
+
+             await _context.SaveChangesAsync();
+            
+             string subject = $"Application Confirmation: {job.JobTitle}";
+            string body = $@"
+    <div style='font-family: Arial, sans-serif; border: 1px solid #cadetblue; padding: 20px; border-radius: 10px; max-width: 600px;'>
+        <h2 style='color: cadetblue;'>Hello {user.FullName},</h2>
+        <p>We have successfully received your resume for the <strong>{job.JobTitle}</strong> position.</p>
+        <p>Our team will review your application and get back to you as soon as possible.</p>
+        <hr style='border: 0; border-top: 1px solid #eee; margin: 20px 0;'>
+        <p style='font-size: 0.8em; color: #777;'>Thank you for using the JobHunter platform.</p>
+    </div>";
+            await _emailService.SendEmailAsync(user.Email, subject, body);
+
+            
 
             return RedirectToAction(nameof(MyApplications));
         }
